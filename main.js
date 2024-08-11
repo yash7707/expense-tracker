@@ -122,7 +122,7 @@ function addTransactionToUI(transactionName, transactionAmount, transactionType,
 
     let newListItemHTML = `
         <li class="${transactionType}">
-            <span>${transactionName}</span> <span id="history-amt">${transactionAmount}</span>
+            <span id="trans-name">${transactionName}</span> <span id="history-amt">${transactionAmount}</span>
             <button class="delete-btn" onclick="deleteTransaction(this)"><i class="fa-solid fa-trash-can"></i></button>
         </li>`;
 
@@ -173,7 +173,7 @@ function addTransactionToUI(transactionName, transactionAmount, transactionType,
 function deleteTransaction(button) {
     let listItem = button.parentNode;
     let transactionAmount = parseFloat(listItem.querySelector('#history-amt').textContent);
-    let transactionName = listItem.firstChild.textContent.trim();
+    let transactionName = listItem.querySelector('#trans-name').textContent.trim();
     let transactionType = listItem.classList.contains('plus') ? 'plus' : 'minus';
 
     // Remove from localStorage
