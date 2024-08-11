@@ -122,7 +122,7 @@ function addTransactionToUI(transactionName, transactionAmount, transactionType,
 
     let newListItemHTML = `
         <li class="${transactionType}">
-            <span>${transactionName}</span> <span id="history-amt">$${transactionAmount}</span>
+            <span>${transactionName}</span> <span id="history-amt">${transactionAmount}</span>
             <button class="delete-btn" onclick="deleteTransaction(this)"><i class="fa-solid fa-trash-can"></i></button>
         </li>`;
 
