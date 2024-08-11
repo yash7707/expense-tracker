@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/04cfa4774c.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="align-middle container">
+    <!---userid-block-->
+      <div class="userid-blk width-33">
+        <h2 class="user-head">Hello.</h2>
+          <input type="text" value="" id="userid" readonly>
+       </div>
+    <!---heading-block-->
+      <div class="heading-blk width-33">
+          <h1>Expense Tracker</h1>
+       </div>
+      <!---totalbalance-block-->
+      <div class="totalbalance-blk width-33">
+        <h4>Main Balance: <span id="final-balance" class="sub-heading">$0</span></h4>
+      </div> 
+    </div>
+  </header>
+
+ 
+
+  <section class="main-body">
+  <div class="container">
+    
+    <div class="content">
+  
+
+    <div class="chart-main-div">
+    <div class="incomeChart-div">
+      <canvas id="incomeChart" width="400" height="400"></canvas>
+    </div>
+    <div class="expenseChart-div">
+    <canvas id="expenseChart" width="400" height="400"></canvas>
+  </div>
+  </div>
+  <div class="main-div">
+    <div class="balance">
+      
+    </div>
+    <div class="inc-exp-container">
+      <div id="plus-money" class="expense-btn" onclick="toggleActive('plus')">
+        <h4>Income</h4>
+        <p class="money plus">+$<span id="income-update">0</span></p>
+      </div>
+      <div id="minus-money" class="expense-btn" onclick="toggleActive('minus')">
+        <h4>Expense</h4>
+        <p class="money minus">-$<span id="expense-update">0</span></p>
+      </div>
+
+    </div>
+    <p class="mb-10">(Choose type of expense you are adding by simply clicking on either of above tabs)</p>
+
+    <div class="add-transaction">
+      <h3>Add new transaction</h3>
+        <div class="form-control" id="transaction-div">
+          
+          <div class="mb-10">
+          <input type="text" id="text" placeholder="Enter transaction name">
+          </div>
+          <div class="mb-10">
+          <input type="number" id="amount" placeholder="Enter transaction amount">
+        </div>
+          <button type="button" class="btn" onclick="addTransaction()">Add transaction</button>
+        </div>
+    </div>
+   
+    
+    </div>
+</div>
+
+<div class="sidebar">
+<div class="history">
+  <h3>Transaction History</h3>
+  <ul class="list" id="history-list">
+
+  </ul>
+</div>
+</div>
+
+
+
+  </div>
+</section>
+
+  <!-- Custom Alert Dialog Box -->
+<div id="customAlert" class="custom-alert">
+  <div class="alert-content">
+      <span id="alertMessage"></span>
+      <button id="closeAlert" class="close-alert-btn"><i class="fa-solid fa-delete-left"></i></button>
+  </div>
+</div>
+
+  
+
+  <!--js-files-->
+  <script src="main.js"></script>
+</body>
+</html>
