@@ -1,266 +1,258 @@
-let currentType = '';
-let finalBalance = document.getElementById('final-balance');
+class FinancialTracker {
+    constructor() {
+        this.currentType = '';
+        this.userID = this.initializeUserID();
+        this.finalBalance = document.getElementById('final-balance');
+        this.incomeChart = this.initializeChart('incomeChart', 'Income Distribution');
+        this.expenseChart = this.initializeChart('expenseChart', 'Expense Distribution');
 
-// Initialize Chart.js for Income Chart
-let incomeCtx = document.getElementById('incomeChart').getContext('2d');
-let incomeChart = new Chart(incomeCtx, {
-    type: 'doughnut',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Income Distribution',
-            data: [],
-            backgroundColor: [],
-            borderWidth: 1
-        }]
-    }
-});
-
-// Initialize Chart.js for Expense Chart
-let expenseCtx = document.getElementById('expenseChart').getContext('2d');
-let expenseChart = new Chart(expenseCtx, {
-    type: 'doughnut',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Expense Distribution',
-            data: [],
-            backgroundColor: [],
-            borderWidth: 1
-        }]
-    }
-});
-
-// Function to generate a random user ID
-function generateUserID() {
-    return 'user_' + Math.random().toString(36).substr(2, 9);
-}
-
-// Check if a user ID exists in localStorage, otherwise create one
-let userID = localStorage.getItem('userID');
-if (!userID) {
-    userID = generateUserID();
-    localStorage.setItem('userID', userID);
-}
-
-// Function to save transaction history in localStorage
-function saveTransaction(transaction) {
-    let transactionHistory = JSON.parse(localStorage.getItem(userID)) || [];
-    transactionHistory.push(transaction);
-    localStorage.setItem(userID, JSON.stringify(transactionHistory));
-}
-
-// Function to retrieve and display transaction history
-function displayTransactionHistory() {
-    let transactionHistory = JSON.parse(localStorage.getItem(userID)) || [];
-    transactionHistory.forEach(transaction => {
-        addTransactionToUI(transaction.name, transaction.amount, transaction.type, true);
-    });
-}
-
-// Function to toggle active transaction type
-function toggleActive(type) {
-    let plusDiv = document.getElementById('plus-money');
-    let minusDiv = document.getElementById('minus-money');
-    let transactionUpdateClass = document.getElementById('transaction-div');
-
-    currentType = type;
-
-    if (type === 'plus') {
-        plusDiv.classList.add('plus-active');
-        minusDiv.classList.remove('minus-active');
-        transactionUpdateClass.classList.add('plus');
-        transactionUpdateClass.classList.remove('minus');
-    } else if (type === 'minus') {
-        minusDiv.classList.add('minus-active');
-        plusDiv.classList.remove('plus-active');
-        transactionUpdateClass.classList.add('minus');
-        transactionUpdateClass.classList.remove('plus');
-    }
-}
-
-// Update the addTransaction function to include validations and save transactions
-function addTransaction() {
-    let transactionName = document.getElementById('text').value.trim();
-    let transactionAmount = parseFloat(document.getElementById('amount').value.trim());
-
-    // Validation: Ensure non-empty transaction name and valid transaction amount
-    if (transactionName === '' || isNaN(transactionAmount) || transactionAmount <= 0) {
-        showAlert('Please provide a valid transaction name and amount');
-        return;
+        this.displayTransactionHistory();
+        this.setEventListeners();
     }
 
-    // Validation: Ensure transaction name is not too long
-    if (transactionName.length > 15) {
-        showAlert('Please provide a transaction name shorter than 15 characters');
-        return;
+    initializeChart(elementId, label) {
+        const ctx = document.getElementById(elementId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: label,
+                    data: [],
+                    backgroundColor: [],
+                    borderWidth: 1
+                }]
+            }
+        });
     }
 
-    // Validation: Ensure a transaction type is selected
-    if (!currentType) {
-        showAlert('Please choose the type of transaction');
-        return;
+    generateUserID() {
+        return 'user_' + Math.random().toString(36).substr(2, 9);
     }
 
-    let transaction = {
-        name: transactionName,
-        amount: transactionAmount,
-        type: currentType
-    };
-
-    saveTransaction(transaction);
-    addTransactionToUI(transactionName, transactionAmount, currentType, true);
-
-    // Clear input fields
-    document.getElementById('text').value = '';
-    document.getElementById('amount').value = '';
-}
-
-// Function to add a transaction to the UI with list overflow handling
-function addTransactionToUI(transactionName, transactionAmount, transactionType, updateCharts) {
-    let historyUl = document.getElementById('history-list');
-
-    let newListItemHTML = `
-        <li class="${transactionType}">
-            <span id="trans-name">${transactionName}</span> <span id="history-amt">${transactionAmount}</span>
-            <button class="delete-btn" onclick="deleteTransaction(this)"><i class="fa-solid fa-trash-can"></i></button>
-        </li>`;
-
-    // Handle list overflow
-    if (historyUl.childNodes.length > 10) {
-        historyUl.style.overflowY = 'scroll';
-        historyUl.style.maxHeight = '600px';
+    initializeUserID() {
+        let userID = localStorage.getItem('userID');
+        if (!userID) {
+            userID = this.generateUserID();
+            localStorage.setItem('userID', userID);
+        }
+        return userID;
     }
 
-    historyUl.insertAdjacentHTML('beforeend', newListItemHTML);
+    saveTransaction(transaction) {
+        const transactionHistory = JSON.parse(localStorage.getItem(this.userID)) || [];
+        transactionHistory.push(transaction);
+        localStorage.setItem(this.userID, JSON.stringify(transactionHistory));
+    }
 
-    let incomeUpdate = document.getElementById('income-update');
-    let expenseUpdate = document.getElementById('expense-update');
-    let incomeUpdateNum = parseFloat(incomeUpdate.textContent);
-    let expenseUpdateNum = parseFloat(expenseUpdate.textContent);
+    displayTransactionHistory() {
+        const transactionHistory = JSON.parse(localStorage.getItem(this.userID)) || [];
+        transactionHistory.forEach(transaction => {
+            this.addTransactionToUI(transaction.name, transaction.amount, transaction.type, true);
+        });
+    }
 
-    if (transactionType === 'plus') {
-        incomeUpdateNum += transactionAmount;
-        incomeUpdate.textContent = incomeUpdateNum;
+    toggleActive(type) {
+        const plusDiv = document.getElementById('plus-money');
+        const minusDiv = document.getElementById('minus-money');
+        const transactionUpdateClass = document.getElementById('transaction-div');
 
-        if (updateCharts) {
-            incomeChart.data.labels.push(transactionName);
-            incomeChart.data.datasets[0].data.push(transactionAmount);
-            incomeChart.data.datasets[0].backgroundColor.push(getRandomColor());
-            incomeChart.update();
+        this.currentType = type;
+
+        if (type === 'plus') {
+            plusDiv.classList.add('plus-active');
+            minusDiv.classList.remove('minus-active');
+            transactionUpdateClass.classList.add('plus');
+            transactionUpdateClass.classList.remove('minus');
+        } else if (type === 'minus') {
+            minusDiv.classList.add('minus-active');
+            plusDiv.classList.remove('plus-active');
+            transactionUpdateClass.classList.add('minus');
+            transactionUpdateClass.classList.remove('plus');
+        }
+    }
+
+    addTransaction() {
+        const transactionName = document.getElementById('text').value.trim();
+        const transactionAmount = parseFloat(document.getElementById('amount').value.trim());
+
+        if (!this.validateTransaction(transactionName, transactionAmount)) return;
+
+        const transaction = {
+            name: transactionName,
+            amount: transactionAmount,
+            type: this.currentType
+        };
+
+        this.saveTransaction(transaction);
+        this.addTransactionToUI(transactionName, transactionAmount, this.currentType, true);
+
+        document.getElementById('text').value = '';
+        document.getElementById('amount').value = '';
+    }
+
+    validateTransaction(name, amount) {
+        if (name === '' || isNaN(amount) || amount <= 0) {
+            this.showAlert('Please provide a valid transaction name and amount');
+            return false;
         }
 
-        showAlert(`Income added: ${transactionName} = $${transactionAmount}`);
-    } else if (transactionType === 'minus') {
-        expenseUpdateNum += transactionAmount;
-        expenseUpdate.textContent = expenseUpdateNum;
-
-        if (updateCharts) {
-            expenseChart.data.labels.push(transactionName);
-            expenseChart.data.datasets[0].data.push(transactionAmount);
-            expenseChart.data.datasets[0].backgroundColor.push(getRandomColor());
-            expenseChart.update();
+        if (name.length > 15) {
+            this.showAlert('Please provide a transaction name shorter than 15 characters');
+            return false;
         }
 
-        showAlert(`Expense added: ${transactionName} = $${transactionAmount}`);
+        if (!this.currentType) {
+            this.showAlert('Please choose the type of transaction');
+            return false;
+        }
+
+        return true;
     }
 
-    let balance = incomeUpdateNum - expenseUpdateNum;
-    updateFinalBalance(balance);
-}
+    addTransactionToUI(transactionName, transactionAmount, transactionType, updateCharts) {
+        const historyUl = document.getElementById('history-list');
 
-// Modify deleteTransaction to also remove the transaction from localStorage
-function deleteTransaction(button) {
-    let listItem = button.parentNode;
-    let transactionAmount = parseFloat(listItem.querySelector('#history-amt').textContent);
-    let transactionName = listItem.querySelector('#trans-name').textContent.trim();
-    let transactionType = listItem.classList.contains('plus') ? 'plus' : 'minus';
+        const newListItemHTML = `
+            <li class="${transactionType}">
+                <span id="trans-name">${transactionName}</span> <span id="history-amt">${transactionAmount}</span>
+                <button class="delete-btn" onclick="tracker.deleteTransaction(this)"><i class="fa-solid fa-trash-can"></i></button>
+            </li>`;
 
-    // Remove from localStorage
-    let transactionHistory = JSON.parse(localStorage.getItem(userID)) || [];
-    transactionHistory = transactionHistory.filter(transaction => {
-        return !(transaction.name === transactionName && transaction.amount === transactionAmount && transaction.type === transactionType);
-    });
-    localStorage.setItem(userID, JSON.stringify(transactionHistory));
+        if (historyUl.childNodes.length > 10) {
+            historyUl.style.overflowY = 'scroll';
+            historyUl.style.maxHeight = '600px';
+        }
 
-    let incomeUpdate = document.getElementById('income-update');
-    let incomeUpdateNum = parseFloat(incomeUpdate.textContent);
-    let expenseUpdate = document.getElementById('expense-update');
-    let expenseUpdateNum = parseFloat(expenseUpdate.textContent);
+        historyUl.insertAdjacentHTML('beforeend', newListItemHTML);
 
-    // Remove from UI and charts
-    if (transactionType === 'plus') {
-        incomeUpdateNum -= transactionAmount;
-        incomeUpdate.textContent = incomeUpdateNum;
+        const incomeUpdate = document.getElementById('income-update');
+        const expenseUpdate = document.getElementById('expense-update');
+        let incomeUpdateNum = parseFloat(incomeUpdate.textContent);
+        let expenseUpdateNum = parseFloat(expenseUpdate.textContent);
 
-        let index = incomeChart.data.labels.indexOf(transactionName);
+        if (transactionType === 'plus') {
+            incomeUpdateNum += transactionAmount;
+            incomeUpdate.textContent = incomeUpdateNum;
+
+            if (updateCharts) {
+                this.updateChart(this.incomeChart, transactionName, transactionAmount);
+            }
+
+            this.showAlert(`Income added: ${transactionName} = $${transactionAmount}`);
+        } else if (transactionType === 'minus') {
+            expenseUpdateNum += transactionAmount;
+            expenseUpdate.textContent = expenseUpdateNum;
+
+            if (updateCharts) {
+                this.updateChart(this.expenseChart, transactionName, transactionAmount);
+            }
+
+            this.showAlert(`Expense added: ${transactionName} = $${transactionAmount}`);
+        }
+
+        const balance = incomeUpdateNum - expenseUpdateNum;
+        this.updateFinalBalance(balance);
+    }
+
+    updateChart(chart, name, amount) {
+        chart.data.labels.push(name);
+        chart.data.datasets[0].data.push(amount);
+        chart.data.datasets[0].backgroundColor.push(this.getRandomColor());
+        chart.update();
+    }
+
+    deleteTransaction(button) {
+        const listItem = button.parentNode;
+        const transactionAmount = parseFloat(listItem.querySelector('#history-amt').textContent);
+        const transactionName = listItem.querySelector('#trans-name').textContent.trim();
+        const transactionType = listItem.classList.contains('plus') ? 'plus' : 'minus';
+
+        const transactionHistory = JSON.parse(localStorage.getItem(this.userID)) || [];
+
+        // Filter out the transaction based on name, amount, and type
+        const filteredHistory = transactionHistory.filter(transaction =>
+            !(transaction.name === transactionName &&
+                transaction.amount === transactionAmount &&
+                transaction.type === transactionType)
+        );
+
+        // Update local storage with the filtered transactions
+        localStorage.setItem(this.userID, JSON.stringify(filteredHistory));
+
+        // Update the UI and remove the transaction
+        this.removeFromUIAndChart(transactionType, transactionName, transactionAmount);
+        listItem.parentNode.removeChild(listItem);
+    }
+
+    removeFromUIAndChart(type, name, amount) {
+        const incomeUpdate = document.getElementById('income-update');
+        const expenseUpdate = document.getElementById('expense-update');
+        let incomeUpdateNum = parseFloat(incomeUpdate.textContent);
+        let expenseUpdateNum = parseFloat(expenseUpdate.textContent);
+
+        if (type === 'plus') {
+            incomeUpdateNum -= amount;
+            incomeUpdate.textContent = incomeUpdateNum;
+            this.updateChartOnDelete(this.incomeChart, name);
+            this.showAlert(`Income removed: ${name} = $${amount}`);
+        } else if (type === 'minus') {
+            expenseUpdateNum -= amount;
+            expenseUpdate.textContent = expenseUpdateNum;
+            this.updateChartOnDelete(this.expenseChart, name);
+            this.showAlert(`Expense removed: ${name} = $${amount}`);
+        }
+
+        const balance = incomeUpdateNum - expenseUpdateNum;
+        this.updateFinalBalance(balance);
+    }
+
+    updateChartOnDelete(chart, name) {
+        const index = chart.data.labels.indexOf(name);
         if (index > -1) {
-            incomeChart.data.labels.splice(index, 1);
-            incomeChart.data.datasets[0].data.splice(index, 1);
-            incomeChart.data.datasets[0].backgroundColor.splice(index, 1);
-            incomeChart.update();
+            chart.data.labels.splice(index, 1);
+            chart.data.datasets[0].data.splice(index, 1);
+            chart.data.datasets[0].backgroundColor.splice(index, 1);
+            chart.update();
         }
-
-        showAlert(`Income removed: ${transactionName} = $${transactionAmount}`);
-    } else if (transactionType === 'minus') {
-        expenseUpdateNum -= transactionAmount;
-        expenseUpdate.textContent = expenseUpdateNum;
-
-        let index = expenseChart.data.labels.indexOf(transactionName);
-        if (index > -1) {
-            expenseChart.data.labels.splice(index, 1);
-            expenseChart.data.datasets[0].data.splice(index, 1);
-            expenseChart.data.datasets[0].backgroundColor.splice(index, 1);
-            expenseChart.update();
-        }
-
-        showAlert(`Expense removed: ${transactionName} = $${transactionAmount}`);
     }
 
-    let balance = incomeUpdateNum - expenseUpdateNum;
-    updateFinalBalance(balance);
-
-    listItem.parentNode.removeChild(listItem);
-}
-
-// Function to update the final balance
-function updateFinalBalance(balance) {
-    let balanceTar = document.getElementById("final-balance");
-    balanceTar.innerHTML = `$${balance}`;
-}
-
-// Function to generate a random color for the chart slices
-function getRandomColor() {
-    let letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
+    updateFinalBalance(balance) {
+        this.finalBalance.innerHTML = `$${balance}`;
     }
-    return color;
+
+    getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    showAlert(message) {
+        const alertBox = document.getElementById('customAlert');
+        const alertMessage = document.getElementById('alertMessage');
+
+        alertMessage.textContent = message;
+        alertBox.classList.add('active');
+
+        setTimeout(() => {
+            alertBox.classList.remove('active');
+        }, 7000);
+    }
+
+    setEventListeners() {
+        document.getElementById('closeAlert').onclick = () => {
+            document.getElementById('customAlert').classList.remove('active');
+        };
+
+        window.onload = () => {
+            const userIdInput = document.getElementById('userid');
+            userIdInput.value = this.userID;
+        };
+    }
 }
 
-// Function to show the custom alert box
-function showAlert(message) {
-    let alertBox = document.getElementById('customAlert');
-    let alertMessage = document.getElementById('alertMessage');
 
-    alertMessage.textContent = message;
-    alertBox.classList.add('active');
-
-    // Auto-close the alert box after 7 seconds
-    setTimeout(function () {
-        alertBox.classList.remove('active');
-    }, 7000);
-}
-
-document.getElementById('closeAlert').onclick = function () {
-    document.getElementById('customAlert').classList.remove('active');
-}
-
-// Call displayTransactionHistory when the page loads
-window.onload = function () {
-    displayTransactionHistory();
-
-    let userIdInput =  document.getElementById('userid');
-    userIdInput.value = userID;
-};
+const tracker = new FinancialTracker();
