@@ -5,7 +5,8 @@ class FinancialTracker {
         this.finalBalance = document.getElementById('final-balance');
         this.incomeChart = this.initializeChart('incomeChart', 'Income Distribution');
         this.expenseChart = this.initializeChart('expenseChart', 'Expense Distribution');
-
+        this.historyUl = document.getElementById('history-list');
+        
         this.displayTransactionHistory();
         this.setEventListeners();
     }
@@ -111,7 +112,6 @@ class FinancialTracker {
     }
 
     addTransactionToUI(transactionName, transactionAmount, transactionType, updateCharts) {
-        const historyUl = document.getElementById('history-list');
 
         const newListItemHTML = `
             <li class="${transactionType}">
@@ -119,12 +119,14 @@ class FinancialTracker {
                 <button class="delete-btn" onclick="tracker.deleteTransaction(this)"><i class="fa-solid fa-trash-can"></i></button>
             </li>`;
 
-        if (historyUl.childNodes.length > 10) {
-            historyUl.style.overflowY = 'scroll';
-            historyUl.style.maxHeight = '600px';
+        if (this.historyUl.children.length > 9) {
+            this.historyUl.style.overflowY = 'scroll';
+            this.historyUl.style.maxHeight = '600px';
         }
 
-        historyUl.insertAdjacentHTML('beforeend', newListItemHTML);
+        console.log(this.historyUl.children.length)
+
+        this.historyUl.insertAdjacentHTML('beforeend', newListItemHTML);
 
         const incomeUpdate = document.getElementById('income-update');
         const expenseUpdate = document.getElementById('expense-update');
@@ -167,23 +169,30 @@ class FinancialTracker {
         const transactionAmount = parseFloat(listItem.querySelector('#history-amt').textContent);
         const transactionName = listItem.querySelector('#trans-name').textContent.trim();
         const transactionType = listItem.classList.contains('plus') ? 'plus' : 'minus';
-
+    
         const transactionHistory = JSON.parse(localStorage.getItem(this.userID)) || [];
 
-        // Filter out the transaction based on name, amount, and type
-        const filteredHistory = transactionHistory.filter(transaction =>
-            !(transaction.name === transactionName &&
-                transaction.amount === transactionAmount &&
-                transaction.type === transactionType)
-        );
+        if (this.historyUl.children.length <= 11) {
+            this.historyUl.style.overflowY = 'visible';
+            this.historyUl.style.maxHeight = 'none';
+        }
 
+        console.log(this.historyUl.children.length)
+    
+        // Filter out the transaction based on name, amount, and type
+        const filteredHistory = transactionHistory.filter(transaction => 
+            !(transaction.name === transactionName && 
+              transaction.amount === transactionAmount && 
+              transaction.type === transactionType)
+        );
+    
         // Update local storage with the filtered transactions
         localStorage.setItem(this.userID, JSON.stringify(filteredHistory));
-
+    
         // Update the UI and remove the transaction
         this.removeFromUIAndChart(transactionType, transactionName, transactionAmount);
         listItem.parentNode.removeChild(listItem);
-    }
+    }    
 
     removeFromUIAndChart(type, name, amount) {
         const incomeUpdate = document.getElementById('income-update');
@@ -256,3 +265,5 @@ class FinancialTracker {
 
 
 const tracker = new FinancialTracker();
+
+
