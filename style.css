@@ -68,7 +68,6 @@
 
   .content {
     width: 70%;
-    height: 100%;
   }
 
   section.main-body {
@@ -120,7 +119,7 @@
     height: 100%;
     display: flex;
     justify-content: center;
-    margin: 1%;
+    margin: 1% 1% 0;
     background: #ffffff94;
   }
 
@@ -324,15 +323,27 @@ div#customAlert.active {
 
 
 @media only screen and (max-width: 940px) {
+header {
+    height: 200px;
+}
 header .width-33 {
   max-width: 100%;
   text-align: center;
 }
+section.main-body {
+  padding-bottom: 40px;
+  height: auto;
+}
 .content {
   width: 100%;
+  height: 100%;
 }
 .sidebar {
   width: 100%;
   padding-left: 0;
+}
+.custom-alert {
+  top: 25%;
+  max-width: 50%;
 }
 }
